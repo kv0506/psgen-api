@@ -16,7 +16,7 @@ public class FunctionBase
 
     protected async Task<HttpResponseData> Success<T>(HttpRequestData req, T apiResponse)
     {
-        var response = req.CreateResponse(HttpStatusCode.OK);
+        var response = req.CreateResponse();
         await response.WriteAsJsonAsync(apiResponse).ConfigureAwait(false);
         return response;
     }
@@ -33,15 +33,15 @@ public class FunctionBase
 
     protected async Task<HttpResponseData> Error(HttpRequestData req, string error)
     {
-        var response = req.CreateResponse(HttpStatusCode.BadRequest);
-        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
+        var response = req.CreateResponse();
+        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }, HttpStatusCode.BadRequest).ConfigureAwait(false);
         return response;
     }
 
     protected async Task<HttpResponseData> AuthError(HttpRequestData req, string error)
     {
-        var response = req.CreateResponse(HttpStatusCode.Unauthorized);
-        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
+        var response = req.CreateResponse();
+        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }, HttpStatusCode.Unauthorized).ConfigureAwait(false);
         return response;
     }
 }
