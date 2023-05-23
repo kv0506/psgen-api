@@ -166,7 +166,7 @@ namespace PsGenApi
             }
             else
             {
-                var documents = await _tableService.GetAccountDocumentsAsync("");
+                var documents = await _tableService.GetAccountDocumentsAsync(tokenDocument.UserId);
                 var apiResponse = new RecordsResponse<Account>
                 {
                     IsSuccess = true,
