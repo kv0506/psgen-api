@@ -22,13 +22,13 @@ public class AccountBase
 
     public string Pattern { get; set; }
 
-    public string Length { get; set; }
+    public int Length { get; set; }
 
     public bool IncludeSpecialCharacter { get; set; }
 
     public bool UseCustomSpecialCharacter { get; set; }
 
-    public bool CustomSpecialCharacter { get; set; }
+    public string CustomSpecialCharacter { get; set; }
 }
 
 
