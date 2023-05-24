@@ -144,7 +144,7 @@ namespace PsGenApi
                 }
 
                 await _tableService.DeleteAccountDocumentAsync(deleteAccountReq.Id);
-                return await Success(req, new DeletedResponse());
+                return await Success(req, new DeletedResponse {IsSuccess = true, Result = true});
             }
 
             return await InvalidRequestPayloadError(req);
