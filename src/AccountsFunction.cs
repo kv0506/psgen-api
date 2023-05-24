@@ -25,10 +25,15 @@ namespace PsGenApi
         {
             _logger.LogInformation("Executing accounts function");
 
+            if (!req.Headers.Contains("AuthToken"))
+            {
+                return await AuthError(req, "AuthToken header is missing");
+            }
+
             var token = req.Headers.GetValues("AuthToken").FirstOrDefault();
             if (token.IsNullOrWhiteSpace())
             {
-                return await AuthError(req, "AuthToken header is missing");
+                return await AuthError(req, "AuthToken is empty");
             }
 
             var tokenDocument = await _tableService.GetTokenDocumentAsync(token);
@@ -58,7 +63,7 @@ namespace PsGenApi
             {
                 return await HandleGetAccountAsync(req, tokenDocument);
             }
-
+             
             return await HttpMethodNotSupportedError(req);
         }
 
