@@ -10,6 +10,8 @@ public class AccountDocument
 
     public string Name { get; set; }
 
+    public string Username { get; set; }
+
     public string Pattern { get; set; }
 
     public int Length { get; set; }

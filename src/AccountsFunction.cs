@@ -78,6 +78,7 @@ namespace PsGenApi
                     UserId = tokenDocument.UserId,
                     Name = createAccountReq.Name,
                     Category = createAccountReq.Category,
+                    Username = createAccountReq.Username,
                     Pattern = createAccountReq.Pattern,
                     Length = createAccountReq.Length,
                     IncludeSpecialCharacter = createAccountReq.IncludeSpecialCharacter,
@@ -112,6 +113,7 @@ namespace PsGenApi
 
                 accountDocument.Name = updateAccountReq.Name;
                 accountDocument.Category = updateAccountReq.Category;
+                accountDocument.Username = updateAccountReq.Username;
                 accountDocument.Pattern = updateAccountReq.Pattern;
                 accountDocument.Length = updateAccountReq.Length;
                 accountDocument.IncludeSpecialCharacter = updateAccountReq.IncludeSpecialCharacter;
@@ -189,6 +191,7 @@ namespace PsGenApi
                 Id = document.Id,
                 Name = document.Name,
                 Category = document.Category,
+                Username = document.Username,
                 Pattern = document.Pattern,
                 Length = document.Length,
                 IncludeSpecialCharacter = document.IncludeSpecialCharacter,
