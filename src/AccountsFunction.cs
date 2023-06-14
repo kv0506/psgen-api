@@ -174,6 +174,7 @@ namespace PsGenApi
             else
             {
                 var documents = await _tableService.GetAccountDocumentsAsync(tokenDocument.UserId);
+                documents = documents.OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
                 var apiResponse = new RecordsResponse<Account>
                 {
                     IsSuccess = true,
