@@ -31,6 +31,8 @@ public class AccountBase
     public bool UseCustomSpecialCharacter { get; set; }
 
     public string CustomSpecialCharacter { get; set; }
+
+    public string Notes { get; set; }
 }
 
 
