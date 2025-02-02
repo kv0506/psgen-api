@@ -34,14 +34,16 @@ public class FunctionBase
     protected async Task<HttpResponseData> Error(HttpRequestData req, string error)
     {
         var response = req.CreateResponse();
-        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }, HttpStatusCode.BadRequest).ConfigureAwait(false);
+        response.StatusCode = HttpStatusCode.BadRequest;
+		await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
         return response;
     }
 
     protected async Task<HttpResponseData> AuthError(HttpRequestData req, string error)
     {
         var response = req.CreateResponse();
-        await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }, HttpStatusCode.Unauthorized).ConfigureAwait(false);
+		response.StatusCode = HttpStatusCode.Unauthorized;
+		await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
         return response;
     }
 }

@@ -23,4 +23,6 @@ public class AccountDocument
     public string CustomSpecialCharacter { get; set; }
 
     public string Notes { get; set; }
+
+    public bool IsFavorite { get; set; }
 }
