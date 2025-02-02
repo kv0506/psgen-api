@@ -84,8 +84,9 @@ namespace PsGenApi
                     IncludeSpecialCharacter = createAccountReq.IncludeSpecialCharacter,
                     UseCustomSpecialCharacter = createAccountReq.UseCustomSpecialCharacter,
                     CustomSpecialCharacter = createAccountReq.CustomSpecialCharacter,
-                    Notes = createAccountReq.Notes
-                };
+                    Notes = createAccountReq.Notes,
+					IsFavorite = createAccountReq.IsFavorite
+				};
 
                 await _tableService.CreateOrUpdateAccountDocumentAsync(tokenDocument.UserId, accountDocument);
 
@@ -121,8 +122,9 @@ namespace PsGenApi
                 accountDocument.UseCustomSpecialCharacter = updateAccountReq.UseCustomSpecialCharacter;
                 accountDocument.CustomSpecialCharacter = updateAccountReq.CustomSpecialCharacter;
                 accountDocument.Notes = updateAccountReq.Notes;
+				accountDocument.IsFavorite = updateAccountReq.IsFavorite;
 
-                await _tableService.CreateOrUpdateAccountDocumentAsync(tokenDocument.UserId, accountDocument);
+				await _tableService.CreateOrUpdateAccountDocumentAsync(tokenDocument.UserId, accountDocument);
 
                 var apiResponse = new RecordResponse<Account>
                 {
@@ -200,8 +202,9 @@ namespace PsGenApi
                 IncludeSpecialCharacter = document.IncludeSpecialCharacter,
                 UseCustomSpecialCharacter = document.UseCustomSpecialCharacter,
                 CustomSpecialCharacter = document.CustomSpecialCharacter,
-                Notes = document.Notes
-            };
+                Notes = document.Notes,
+				IsFavorite = document.IsFavorite
+			};
         }
     }
 }
