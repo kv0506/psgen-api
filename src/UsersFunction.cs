@@ -36,34 +36,38 @@ public class UsersFunction : FunctionBase
 		}
 
 		return await HttpMethodNotSupportedError(req);
-	}        private async Task<HttpResponseData> HandleCreateUserAsync(HttpRequestData req)
+	}        
+	
+	private async Task<HttpResponseData> HandleCreateUserAsync(HttpRequestData req)
 	{
-		var createUserReq = await ReadRequestBody<CreateUser>(req);
+		var createUserReq = await ReadRequestBody<CreateUserDto>(req);
 		if (createUserReq != null)
 		{
-			var document = await _repositoryService.GetUserByUsernameAsync(createUserReq.Username);
-			if (document == null)
+			var user = await _repositoryService.GetUserByUsernameAsync(createUserReq.Username);
+			if (user == null)
 			{
-				document = new UserDocument
+				user = new User
 				{
 					Id = Guid.NewGuid().ToString("N"),
 					Username = createUserReq.Username,
 					Email = createUserReq.Email,
 					Mobile = createUserReq.Mobile,
 					Salt = HashService.CreateSalt()
-				};                    document.Hash = HashService.CreateHash(createUserReq.Password, document.Salt);
+				};
+				
+				user.Hash = HashService.CreateHash(createUserReq.Password, user.Salt);
 
-				await _repositoryService.CreateUserAsync(document);
+				await _repositoryService.CreateUserAsync(user);
 
-				var apiResponse = new RecordResponse<User>
+				var apiResponse = new RecordResponseDto<UserDto>
 				{
 					IsSuccess = true,
-					Result = new User
+					Result = new UserDto
 					{
-						Id = document.Id,
-						Username = document.Username,
-						Email = document.Email,
-						Mobile = document.Mobile
+						Id = user.Id,
+						Username = user.Username,
+						Email = user.Email,
+						Mobile = user.Mobile
 					}
 				};
 
@@ -74,44 +78,47 @@ public class UsersFunction : FunctionBase
 		}
 
 		return await InvalidRequestPayloadError(req);
-	}        private async Task<HttpResponseData> HandleUpdateUserAsync(HttpRequestData req)
+	}
+	
+	private async Task<HttpResponseData> HandleUpdateUserAsync(HttpRequestData req)
 	{
-		var updateUserReq = await ReadRequestBody<UpdateUser>(req);
+		var updateUserReq = await ReadRequestBody<UpdateUserDto>(req);
 		if (updateUserReq != null)
 		{
-			var document = await _repositoryService.GetUserByIdAsync(updateUserReq.Id);
-			if (document != null)
+			var user = await _repositoryService.GetUserByIdAsync(updateUserReq.Id);
+			if (user != null)
 			{
 				if (updateUserReq.NewPassword.IsNotNullOrWhiteSpace())
 				{
-					if (!HashService.VerifyHash(updateUserReq.CurrentPassword, document.Salt, document.Hash))
+					if (!HashService.VerifyHash(updateUserReq.CurrentPassword, user.Salt, user.Hash))
 					{
 						return await Error(req, "Current password is invalid");
 					}
 
-					document.Hash = HashService.CreateHash(updateUserReq.NewPassword, document.Salt);
+					user.Hash = HashService.CreateHash(updateUserReq.NewPassword, user.Salt);
 				}
 
 				if (updateUserReq.Email.IsNotNullOrWhiteSpace())
 				{
-					document.Email = updateUserReq.Email;                    }
+					user.Email = updateUserReq.Email;
+				}
 
 				if (updateUserReq.Mobile.IsNotNullOrWhiteSpace())
 				{
-					document.Mobile = updateUserReq.Mobile;
+					user.Mobile = updateUserReq.Mobile;
 				}
 
-				await _repositoryService.UpdateUserAsync(document);
+				await _repositoryService.UpdateUserAsync(user);
 
-				var apiResponse = new RecordResponse<User>
+				var apiResponse = new RecordResponseDto<UserDto>
 				{
 					IsSuccess = true,
-					Result = new User
+					Result = new UserDto
 					{
-						Id = document.Id,
-						Username = document.Username,
-						Email = document.Email,
-						Mobile = document.Mobile
+						Id = user.Id,
+						Username = user.Username,
+						Email = user.Email,
+						Mobile = user.Mobile
 					}
 				};
 

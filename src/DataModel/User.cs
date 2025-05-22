@@ -5,31 +5,31 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PsGenApi.DataModel;
 
-public class User
+public class DbUser
 {
     [Key]
     public Guid Id { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string Username { get; set; }
+    public string Username { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(255)]
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     [MaxLength(20)]
-    public string Mobile { get; set; }
+    public string Mobile { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(50)]
-    public string Salt { get; set; }
+    public string Salt { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(255)]
-    public string Hash { get; set; }
+    public string Hash { get; set; } = string.Empty;
 
     // Navigation properties
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
-    public virtual ICollection<Token> Tokens { get; set; } = new List<Token>();
+    public virtual ICollection<DbAccount> Accounts { get; set; } = new List<DbAccount>();
+    public virtual ICollection<DbToken> Tokens { get; set; } = new List<DbToken>();
 }

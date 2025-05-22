@@ -17,52 +17,52 @@ public class TableService
         _configuration = configuration;
     }
 
-    public Task CreateOrUpdateTokenDocumentAsync(TokenDocument document)
+    public Task CreateOrUpdateTokenDocumentAsync(Token token)
     {
         var tableClient = CreateTableClient();
 
         var entity = new DocumentEntity
         {
             PartitionKey = AuthTokenPartitionKey,
-            RowKey = document.Id,
+            RowKey = token.Id,
             Timestamp = DateTimeOffset.UtcNow,
-            UserId = document.UserId,
-            Document = SerializationService.Serialize(document)
+            UserId = token.UserId,
+            Document = SerializationService.Serialize(token)
         };
 
         return tableClient.UpsertEntityAsync(entity);
     }
 
-    public async Task<TokenDocument?> GetTokenDocumentAsync(string tokenId)
+    public async Task<Token?> GetTokenDocumentAsync(string tokenId)
     {
         var tableClient = CreateTableClient();
 
         var entities = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == AuthTokenPartitionKey && ent.RowKey == tokenId);
         await foreach (var entity in entities)
         {
-            return SerializationService.Deserialize<TokenDocument>(entity.Document);
+            return SerializationService.Deserialize<Token>(entity.Document);
         }
 
         return null;
     }
 
-    public Task CreateOrUpdateUserDocumentAsync(UserDocument document)
+    public Task CreateOrUpdateUserDocumentAsync(User user)
     {
         var tableClient = CreateTableClient();
 
         var entity = new DocumentEntity
         {
             PartitionKey = UsersPartitionKey,
-            RowKey = document.Username,
+            RowKey = user.Username,
             Timestamp = DateTimeOffset.UtcNow,
-            UserId = document.Id,
-            Document = SerializationService.Serialize(document)
+            UserId = user.Id,
+            Document = SerializationService.Serialize(user)
         };
 
         return tableClient.UpsertEntityAsync(entity);
     }
 
-    public async Task<UserDocument?> GetUserDocumentByUsernameAsync(string username)
+    public async Task<User?> GetUserDocumentByUsernameAsync(string username)
     {
         var tableClient = CreateTableClient();
 
@@ -70,13 +70,13 @@ public class TableService
 
         await foreach (var entity in entities)
         {
-            return SerializationService.Deserialize<UserDocument>(entity.Document);
+            return SerializationService.Deserialize<User>(entity.Document);
         }
 
         return null;
     }
 
-    public async Task<UserDocument?> GetUserDocumentByUserIdAsync(string userId)
+    public async Task<User?> GetUserDocumentByUserIdAsync(string userId)
     {
         var tableClient = CreateTableClient();
 
@@ -84,23 +84,23 @@ public class TableService
 
         await foreach (var entity in entities)
         {
-            return SerializationService.Deserialize<UserDocument>(entity.Document);
+            return SerializationService.Deserialize<User>(entity.Document);
         }
 
         return null;
     }
 
-    public Task CreateOrUpdateAccountDocumentAsync(string userId, AccountDocument document)
+    public Task CreateOrUpdateAccountDocumentAsync(string userId, Account account)
     {
         var tableClient = CreateTableClient();
 
         var entity = new DocumentEntity
         {
             PartitionKey = AccountsPartitionKey,
-            RowKey = document.Id,
+            RowKey = account.Id,
             Timestamp = DateTimeOffset.UtcNow,
             UserId = userId,
-            Document = SerializationService.Serialize(document)
+            Document = SerializationService.Serialize(account)
         };
 
         return tableClient.UpsertEntityAsync(entity);
@@ -112,29 +112,29 @@ public class TableService
         return tableClient.DeleteEntityAsync(AccountsPartitionKey, accountId);
     }
 
-    public async Task<AccountDocument?> GetAccountDocumentAsync(string accountId)
+    public async Task<Account?> GetAccountDocumentAsync(string accountId)
     {
         var tableClient = CreateTableClient();
 
         var entities = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == AccountsPartitionKey && ent.RowKey == accountId);
         await foreach (var entity in entities)
         {
-            return SerializationService.Deserialize<AccountDocument>(entity.Document);
+            return SerializationService.Deserialize<Account>(entity.Document);
         }
 
         return null;
     }
 
-    public async Task<IList<AccountDocument>> GetAccountDocumentsAsync(string userId)
+    public async Task<IList<Account>> GetAccountDocumentsAsync(string userId)
     {
         var tableClient = CreateTableClient();
 
-        var documents = new List<AccountDocument>();
+        var documents = new List<Account>();
 
         var entities = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == AccountsPartitionKey && ent.UserId == userId);
         await foreach (var entity in entities)
         {
-            var document = SerializationService.Deserialize<AccountDocument>(entity.Document);
+            var document = SerializationService.Deserialize<Account>(entity.Document);
             if (document != null)
             {
                 documents.Add(document);

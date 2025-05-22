@@ -26,14 +26,16 @@ public class AccountsFunction : FunctionBase
 		if (!req.Headers.Contains("AuthToken"))
 		{
 			return await AuthError(req, "AuthToken header is missing");
-		}            var token = req.Headers.GetValues("AuthToken").FirstOrDefault();
+		}            
+		
+		var token = req.Headers.GetValues("AuthToken").FirstOrDefault();
 		if (token.IsNullOrWhiteSpace())
 		{
 			return await AuthError(req, "AuthToken is empty");
 		}
 
-		var tokenDocument = await _repositoryService.GetTokenBySecretAsync(token!);
-		if (tokenDocument == null || tokenDocument.ExpiresAt < DateTimeOffset.UtcNow)
+		var tokenDoc = await _repositoryService.GetTokenBySecretAsync(token!);
+		if (tokenDoc == null || tokenDoc.ExpiresAt < DateTimeOffset.UtcNow)
 		{
 			return await AuthError(req, "Invalid AuthToken");
 		}
@@ -42,36 +44,36 @@ public class AccountsFunction : FunctionBase
 
 		if (httpMethod == "put")
 		{
-			return await HandleCreateAccountAsync(req, tokenDocument);
+			return await HandleCreateAccountAsync(req, tokenDoc);
 		}
 
 		if (httpMethod == "post")
 		{
-			return await HandleUpdateAccountAsync(req, tokenDocument);
+			return await HandleUpdateAccountAsync(req, tokenDoc);
 		}
 
 		if (httpMethod == "delete")
 		{
-			return await HandleDeleteAccountAsync(req, tokenDocument);
+			return await HandleDeleteAccountAsync(req, tokenDoc);
 		}
 
 		if (httpMethod == "get")
 		{
-			return await HandleGetAccountAsync(req, tokenDocument);
+			return await HandleGetAccountAsync(req, tokenDoc);
 		}
              
 		return await HttpMethodNotSupportedError(req);
 	}
 
-	private async Task<HttpResponseData> HandleCreateAccountAsync(HttpRequestData req, TokenDocument tokenDocument)
+	private async Task<HttpResponseData> HandleCreateAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
-		var createAccountReq = await ReadRequestBody<CreateAccount>(req);
+		var createAccountReq = await ReadRequestBody<CreateAccountDto>(req);
 		if (createAccountReq != null)
 		{
-			var accountDocument = new AccountDocument
+			var account = new Account
 			{
 				Id = Guid.NewGuid().ToString("N"),
-				UserId = tokenDocument.UserId,
+				UserId = tokenDoc.UserId,
 				Name = createAccountReq.Name,
 				Category = createAccountReq.Category,
 				Username = createAccountReq.Username,
@@ -79,119 +81,127 @@ public class AccountsFunction : FunctionBase
 				Length = createAccountReq.Length,
 				IncludeSpecialCharacter = createAccountReq.IncludeSpecialCharacter,
 				UseCustomSpecialCharacter = createAccountReq.UseCustomSpecialCharacter,
-				CustomSpecialCharacter = createAccountReq.CustomSpecialCharacter,                    Notes = createAccountReq.Notes,
+				CustomSpecialCharacter = createAccountReq.CustomSpecialCharacter,                    
+				Notes = createAccountReq.Notes,
 				IsFavorite = createAccountReq.IsFavorite
 			};
 
-			await _repositoryService.CreateAccountAsync(accountDocument);
+			await _repositoryService.CreateAccountAsync(account);
 
-			var apiResponse = new RecordResponse<Account>
+			var apiResponse = new RecordResponseDto<AccountDto>
 			{
 				IsSuccess = true,
-				Result = Map(accountDocument)
+				Result = MapToDto(account)
 			};
 
 			return await Success(req, apiResponse);
 		}
 
 		return await InvalidRequestPayloadError(req);
-	}        private async Task<HttpResponseData> HandleUpdateAccountAsync(HttpRequestData req, TokenDocument tokenDocument)
+	}        
+	
+	private async Task<HttpResponseData> HandleUpdateAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
-		var updateAccountReq = await ReadRequestBody<UpdateAccount>(req);
+		var updateAccountReq = await ReadRequestBody<UpdateAccountDto>(req);
 		if (updateAccountReq != null)
 		{
-			var accountDocument = await _repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
-			if (accountDocument == null || accountDocument.UserId.IsNotEquals(tokenDocument.UserId))
+			var account = await _repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
+			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
 			}
 
-			accountDocument.Name = updateAccountReq.Name;
-			accountDocument.Category = updateAccountReq.Category;
-			accountDocument.Username = updateAccountReq.Username;
-			accountDocument.Pattern = updateAccountReq.Pattern;
-			accountDocument.Length = updateAccountReq.Length;
-			accountDocument.IncludeSpecialCharacter = updateAccountReq.IncludeSpecialCharacter;
-			accountDocument.UseCustomSpecialCharacter = updateAccountReq.UseCustomSpecialCharacter;
-			accountDocument.CustomSpecialCharacter = updateAccountReq.CustomSpecialCharacter;
-			accountDocument.Notes = updateAccountReq.Notes;
-			accountDocument.IsFavorite = updateAccountReq.IsFavorite;
+			account.Name = updateAccountReq.Name;
+			account.Category = updateAccountReq.Category;
+			account.Username = updateAccountReq.Username;
+			account.Pattern = updateAccountReq.Pattern;
+			account.Length = updateAccountReq.Length;
+			account.IncludeSpecialCharacter = updateAccountReq.IncludeSpecialCharacter;
+			account.UseCustomSpecialCharacter = updateAccountReq.UseCustomSpecialCharacter;
+			account.CustomSpecialCharacter = updateAccountReq.CustomSpecialCharacter;
+			account.Notes = updateAccountReq.Notes;
+			account.IsFavorite = updateAccountReq.IsFavorite;
 
-			await _repositoryService.UpdateAccountAsync(accountDocument);
+			await _repositoryService.UpdateAccountAsync(account);
 
-			var apiResponse = new RecordResponse<Account>
+			var apiResponse = new RecordResponseDto<AccountDto>
 			{
 				IsSuccess = true,
-				Result = Map(accountDocument)
+				Result = MapToDto(account)
 			};
 
 			return await Success(req, apiResponse);
 		}
 
 		return await InvalidRequestPayloadError(req);
-	}        private async Task<HttpResponseData> HandleDeleteAccountAsync(HttpRequestData req, TokenDocument tokenDocument)
+	}
+	
+	private async Task<HttpResponseData> HandleDeleteAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
-		var deleteAccountReq = await ReadRequestBody<DeleteAccount>(req);
+		var deleteAccountReq = await ReadRequestBody<DeleteAccountDto>(req);
 		if (deleteAccountReq != null)
 		{
-			var accountDocument = await _repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
-			if (accountDocument == null || accountDocument.UserId.IsNotEquals(tokenDocument.UserId))
+			var account = await _repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
+			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
 			}
 
 			await _repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
-			return await Success(req, new DeletedResponse {IsSuccess = true, Result = true});
+			return await Success(req, new DeletedResponseDto {IsSuccess = true, Result = true});
 		}
 
 		return await InvalidRequestPayloadError(req);
-	}        private async Task<HttpResponseData> HandleGetAccountAsync(HttpRequestData req, TokenDocument tokenDocument)
-	{            var accountId = req.Query.Get("accountId");
+	}
+	
+	private async Task<HttpResponseData> HandleGetAccountAsync(HttpRequestData req, Token tokenDoc)
+	{
+		var accountId = req.Query.Get("accountId");
 		if (accountId.IsNotNullOrWhiteSpace())
 		{
-			var accountDocument = await _repositoryService.GetAccountByIdAsync(accountId!);
-			if (accountDocument == null || accountDocument.UserId.IsNotEquals(tokenDocument.UserId))
+			var account = await _repositoryService.GetAccountByIdAsync(accountId!);
+			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
 			}
 
-			var apiResponse = new RecordResponse<Account>
+			var apiResponse = new RecordResponseDto<AccountDto>
 			{
 				IsSuccess = true,
-				Result = Map(accountDocument)
+				Result = MapToDto(account)
 			};
 
 			return await Success(req, apiResponse);
 		}
 		else
 		{
-			var documents = await _repositoryService.GetAccountsByUserIdAsync(tokenDocument.UserId);
-			documents = documents.OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
-			var apiResponse = new RecordsResponse<Account>
+			var accounts = await _repositoryService.GetAccountsByUserIdAsync(tokenDoc.UserId);
+			accounts = accounts.OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
+			var apiResponse = new RecordsResponseDto<AccountDto>
 			{
 				IsSuccess = true,
-				Result = documents.Select(Map).ToList()
+				Result = accounts.Select(MapToDto).ToList()
 			};
 
 			return await Success(req, apiResponse);
 		}
 	}
 
-	private Account Map(AccountDocument document)
+	private AccountDto MapToDto(Account account)
 	{
-		return new Account
+		return new AccountDto
 		{
-			Id = document.Id,
-			Name = document.Name,
-			Category = document.Category,
-			Username = document.Username,
-			Pattern = document.Pattern,
-			Length = document.Length,
-			IncludeSpecialCharacter = document.IncludeSpecialCharacter,
-			UseCustomSpecialCharacter = document.UseCustomSpecialCharacter,
-			CustomSpecialCharacter = document.CustomSpecialCharacter,
-			Notes = document.Notes,
-			IsFavorite = document.IsFavorite
+			Id = account.Id,
+			Name = account.Name,
+			Category = account.Category,
+			Username = account.Username,
+			Pattern = account.Pattern,
+			Length = account.Length,
+			IncludeSpecialCharacter = account.IncludeSpecialCharacter,
+			UseCustomSpecialCharacter = account.UseCustomSpecialCharacter,
+			CustomSpecialCharacter = account.CustomSpecialCharacter,
+			Notes = account.Notes,
+			IsFavorite = account.IsFavorite
 		};
 	}
 }

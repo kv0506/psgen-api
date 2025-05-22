@@ -1,53 +1,53 @@
 ﻿namespace PsGenApi.ServiceModel;
 
-public class LoginRequest
+public class LoginRequestDto
 {
-    public string Username { get; set; }
-    public string Password { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
 
-public class CreateUser
+public class CreateUserDto
 {
-    public string Username { get; set; }
+    public string Username { get; set; } = string.Empty;
     
-    public string Password { get; set; }
+    public string Password { get; set; } = string.Empty;
 
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
-    public string Mobile { get; set; }
+    public string Mobile { get; set; } = string.Empty;
 }
 
-public class UpdateUser
+public class UpdateUserDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
-    public string CurrentPassword { get; set; }
+    public string CurrentPassword { get; set; } = string.Empty;
 
-    public string NewPassword { get; set; }
+    public string NewPassword { get; set; } = string.Empty;
 
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
-    public string Mobile { get; set; }
+    public string Mobile { get; set; } = string.Empty;
 }
 
-public class User
+public class UserDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
-    public string Username { get; set; }
+    public string Username { get; set; } = string.Empty;
 
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
-    public string Mobile { get; set; }
+    public string Mobile { get; set; } = string.Empty;
 }
 
-public class UserSession
+public class UserSessionDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
-    public string UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
-    public string Secret { get; set; }
+    public string Secret { get; set; } = string.Empty;
 
     public DateTimeOffset ExpiresAt { get; set; }
 }

@@ -29,13 +29,11 @@ public class FunctionBase
     protected async Task<HttpResponseData> InvalidRequestPayloadError(HttpRequestData req)
     {
         return await Error(req, "Invalid request payload");
-    }
-
-    protected async Task<HttpResponseData> Error(HttpRequestData req, string error)
+    }    protected async Task<HttpResponseData> Error(HttpRequestData req, string error)
     {
         var response = req.CreateResponse();
         response.StatusCode = HttpStatusCode.BadRequest;
-		await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
+		await response.WriteAsJsonAsync(new ApiResponseDto { IsSuccess = false, Message = error }).ConfigureAwait(false);
         return response;
     }
 
@@ -43,7 +41,7 @@ public class FunctionBase
     {
         var response = req.CreateResponse();
 		response.StatusCode = HttpStatusCode.Unauthorized;
-		await response.WriteAsJsonAsync(new ApiResponse { IsSuccess = false, Message = error }).ConfigureAwait(false);
+		await response.WriteAsJsonAsync(new ApiResponseDto { IsSuccess = false, Message = error }).ConfigureAwait(false);
         return response;
     }
 }

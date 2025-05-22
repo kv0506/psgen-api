@@ -1,29 +1,17 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+namespace PsGenApi.Document;
 
-namespace PsGenApi.DataModel;
-
-public class DbAccount
+public class Account
 {
-    [Key]
-    public Guid Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
-    [Required]
-    public Guid UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(128)]
     public string Category { get; set; } = string.Empty;
 
-    [Required]
-    [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
-    [MaxLength(255)]
     public string Username { get; set; } = string.Empty;
 
-    [MaxLength(128)]
     public string Pattern { get; set; } = string.Empty;
 
     public int Length { get; set; }
@@ -32,14 +20,9 @@ public class DbAccount
 
     public bool UseCustomSpecialCharacter { get; set; }
 
-    [MaxLength(2)]
     public string CustomSpecialCharacter { get; set; } = string.Empty;
 
     public string Notes { get; set; } = string.Empty;
 
     public bool IsFavorite { get; set; }
-
-    // Navigation property
-    [ForeignKey(nameof(UserId))]
-    public virtual DbUser User { get; set; } = null!;
 }

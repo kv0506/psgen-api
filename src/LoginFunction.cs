@@ -23,31 +23,32 @@ public class LoginFunction(ILoggerFactory loggerFactory, IRepositoryService repo
 
 	private async Task<HttpResponseData> HandleLoginAsync(HttpRequestData req)
 	{
-		var loginReq = await ReadRequestBody<LoginRequest>(req);
+		var loginReq = await ReadRequestBody<LoginRequestDto>(req);
 		if (loginReq != null)
 		{
-			var userDocument = await repositoryService.GetUserByUsernameAsync(loginReq.Username);
+			var user = await repositoryService.GetUserByUsernameAsync(loginReq.Username);
 
-			if (userDocument != null && HashService.VerifyHash(loginReq.Password, userDocument.Salt, userDocument.Hash))
+			if (user != null && HashService.VerifyHash(loginReq.Password, user.Salt, user.Hash))
 			{
-				var tokenDocument = new TokenDocument
+				var token = new Token
 				{
 					Id = Guid.NewGuid().ToString("N"),
-					UserId = userDocument.Id,
-					Secret = HashService.CreateHash(HashService.CreateSalt(), userDocument.Salt),
+					UserId = user.Id,
+					Secret = HashService.CreateHash(HashService.CreateSalt(), user.Salt),
 					ExpiresAt = DateTimeOffset.UtcNow.AddDays(90)
 				};
 
-				await repositoryService.CreateTokenAsync(tokenDocument);
+				await repositoryService.CreateTokenAsync(token);
 
-				var apiResponse = new RecordResponse<UserSession>
+				var apiResponse = new RecordResponseDto<UserSessionDto>
 				{
-					IsSuccess = true, Result = new UserSession
+					IsSuccess = true, 
+					Result = new UserSessionDto
 					{
-						Id = tokenDocument.Id,
-						UserId = tokenDocument.UserId,
-						Secret = tokenDocument.Secret,
-						ExpiresAt = tokenDocument.ExpiresAt
+						Id = token.Id,
+						UserId = token.UserId,
+						Secret = token.Secret,
+						ExpiresAt = token.ExpiresAt
 					}
 				};
 
