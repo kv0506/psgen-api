@@ -1,5 +1,4 @@
 ﻿using Azure.Data.Tables;
-using Microsoft.Extensions.Configuration;
 using PsGenApi.Document;
 using PsGenApi.Entity;
 

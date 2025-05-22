@@ -1,136 +1,126 @@
 using CSharpExtensions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using PsGenApi.Document;
 using PsGenApi.ServiceModel;
 using PsGenApi.Services;
 
-namespace PsGenApi
+namespace PsGenApi;
+
+public class UsersFunction : FunctionBase
 {
-    public class UsersFunction : FunctionBase
-    {
-        private readonly ILogger _logger;
-        private readonly TableService _tableService;
+	private readonly ILogger _logger;
+	private readonly IRepositoryService _repositoryService;
 
-        public UsersFunction(ILoggerFactory loggerFactory, IConfiguration configuration)
-        {
-            _logger = loggerFactory.CreateLogger<UsersFunction>();
-            _tableService = new TableService(configuration);
-        }
+	public UsersFunction(ILoggerFactory loggerFactory, IRepositoryService repositoryService)
+	{
+		_logger = loggerFactory.CreateLogger<UsersFunction>();
+		_repositoryService = repositoryService;
+	}
 
-        [Function("users")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", "put")] HttpRequestData req)
-        {
-            _logger.LogInformation("Executing users function");
+	[Function("users")]
+	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", "put")] HttpRequestData req)
+	{
+		_logger.LogInformation("Executing users function");
 
-            var httpMethod = req.Method.ToLowerInvariant();
+		var httpMethod = req.Method.ToLowerInvariant();
 
-            if (httpMethod == "put")
-            {
-                return await HandleCreateUserAsync(req);
-            }
+		if (httpMethod == "put")
+		{
+			return await HandleCreateUserAsync(req);
+		}
             
-            if (httpMethod == "post")
-            {
-                return await HandleUpdateUserAsync(req);
-            }
+		if (httpMethod == "post")
+		{
+			return await HandleUpdateUserAsync(req);
+		}
 
-            return await HttpMethodNotSupportedError(req);
-        }
+		return await HttpMethodNotSupportedError(req);
+	}        private async Task<HttpResponseData> HandleCreateUserAsync(HttpRequestData req)
+	{
+		var createUserReq = await ReadRequestBody<CreateUser>(req);
+		if (createUserReq != null)
+		{
+			var document = await _repositoryService.GetUserByUsernameAsync(createUserReq.Username);
+			if (document == null)
+			{
+				document = new UserDocument
+				{
+					Id = Guid.NewGuid().ToString("N"),
+					Username = createUserReq.Username,
+					Email = createUserReq.Email,
+					Mobile = createUserReq.Mobile,
+					Salt = HashService.CreateSalt()
+				};                    document.Hash = HashService.CreateHash(createUserReq.Password, document.Salt);
 
-        private async Task<HttpResponseData> HandleCreateUserAsync(HttpRequestData req)
-        {
-            var createUserReq = await ReadRequestBody<CreateUser>(req);
-            if (createUserReq != null)
-            {
-                var document = await _tableService.GetUserDocumentByUsernameAsync(createUserReq.Username);
-                if (document == null)
-                {
-                    document = new UserDocument
-                    {
-                        Id = Guid.NewGuid().ToString("N"),
-                        Username = createUserReq.Username,
-                        Email = createUserReq.Email,
-                        Mobile = createUserReq.Mobile,
-                        Salt = HashService.CreateSalt()
-                    };
+				await _repositoryService.CreateUserAsync(document);
 
-                    document.Hash = HashService.CreateHash(createUserReq.Password, document.Salt);
+				var apiResponse = new RecordResponse<User>
+				{
+					IsSuccess = true,
+					Result = new User
+					{
+						Id = document.Id,
+						Username = document.Username,
+						Email = document.Email,
+						Mobile = document.Mobile
+					}
+				};
 
-                    await _tableService.CreateOrUpdateUserDocumentAsync(document);
+				return await Success(req, apiResponse);
+			}
 
-                    var apiResponse = new RecordResponse<User>
-                    {
-                        IsSuccess = true,
-                        Result = new User
-                        {
-                            Id = document.Id,
-                            Username = document.Username,
-                            Email = document.Email,
-                            Mobile = document.Mobile
-                        }
-                    };
+			return await Error(req, "Username already exists");
+		}
 
-                    return await Success(req, apiResponse);
-                }
+		return await InvalidRequestPayloadError(req);
+	}        private async Task<HttpResponseData> HandleUpdateUserAsync(HttpRequestData req)
+	{
+		var updateUserReq = await ReadRequestBody<UpdateUser>(req);
+		if (updateUserReq != null)
+		{
+			var document = await _repositoryService.GetUserByIdAsync(updateUserReq.Id);
+			if (document != null)
+			{
+				if (updateUserReq.NewPassword.IsNotNullOrWhiteSpace())
+				{
+					if (!HashService.VerifyHash(updateUserReq.CurrentPassword, document.Salt, document.Hash))
+					{
+						return await Error(req, "Current password is invalid");
+					}
 
-                return await Error(req, "Username already exists");
-            }
+					document.Hash = HashService.CreateHash(updateUserReq.NewPassword, document.Salt);
+				}
 
-            return await InvalidRequestPayloadError(req);
-        }
+				if (updateUserReq.Email.IsNotNullOrWhiteSpace())
+				{
+					document.Email = updateUserReq.Email;                    }
 
-        private async Task<HttpResponseData> HandleUpdateUserAsync(HttpRequestData req)
-        {
-            var updateUserReq = await ReadRequestBody<UpdateUser>(req);
-            if (updateUserReq != null)
-            {
-                var document = await _tableService.GetUserDocumentByUserIdAsync(updateUserReq.Id);
-                if (document != null)
-                {
-                    if (updateUserReq.NewPassword.IsNotNullOrWhiteSpace())
-                    {
-                        if (!HashService.VerifyHash(updateUserReq.CurrentPassword, document.Salt, document.Hash))
-                        {
-                            return await Error(req, "Current password is invalid");
-                        }
+				if (updateUserReq.Mobile.IsNotNullOrWhiteSpace())
+				{
+					document.Mobile = updateUserReq.Mobile;
+				}
 
-                        document.Hash = HashService.CreateHash(updateUserReq.NewPassword, document.Salt);
-                    }
+				await _repositoryService.UpdateUserAsync(document);
 
-                    if (updateUserReq.Email.IsNotNullOrWhiteSpace())
-                    {
-                        document.Email = updateUserReq.Email;
-                    }
+				var apiResponse = new RecordResponse<User>
+				{
+					IsSuccess = true,
+					Result = new User
+					{
+						Id = document.Id,
+						Username = document.Username,
+						Email = document.Email,
+						Mobile = document.Mobile
+					}
+				};
 
-                    if (updateUserReq.Mobile.IsNotNullOrWhiteSpace())
-                    {
-                        document.Mobile = updateUserReq.Mobile;
-                    }
+				return await Success(req, apiResponse);
+			}
 
-                    await _tableService.CreateOrUpdateUserDocumentAsync(document);
+			return await Error(req, "User does not exist");
+		}
 
-                    var apiResponse = new RecordResponse<User>
-                    {
-                        IsSuccess = true,
-                        Result = new User
-                        {
-                            Id = document.Id,
-                            Username = document.Username,
-                            Email = document.Email,
-                            Mobile = document.Mobile
-                        }
-                    };
-
-                    return await Success(req, apiResponse);
-                }
-
-                return await Error(req, "User does not exist");
-            }
-
-            return await InvalidRequestPayloadError(req);
-        }
-    }
+		return await InvalidRequestPayloadError(req);
+	}
 }
