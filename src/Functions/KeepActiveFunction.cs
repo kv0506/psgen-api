@@ -2,14 +2,9 @@ using Microsoft.Azure.Functions.Worker;
 
 namespace PsGenApi.Functions;
 
-public class KeepActiveFunction
+public class KeepActiveFunction(ILoggerFactory loggerFactory)
 {
-	private readonly ILogger _logger;
-
-	public KeepActiveFunction(ILoggerFactory loggerFactory)
-	{
-		_logger = loggerFactory.CreateLogger<KeepActiveFunction>();
-	}
+	private readonly ILogger _logger = loggerFactory.CreateLogger<KeepActiveFunction>();
 
 	[Function("keep-active")]
 	public void Run([TimerTrigger("0 */15 * * * *")] MyInfo myTimer)
