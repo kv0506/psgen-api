@@ -7,16 +7,10 @@ using PsGenApi.Services;
 
 namespace PsGenApi.Functions;
 
-public class AccountsFunction : FunctionBase
+public class AccountsFunction(ILoggerFactory loggerFactory, IRepositoryService repositoryService)
+	: FunctionBase
 {
-	private readonly ILogger _logger;
-	private readonly IRepositoryService _repositoryService;
-
-	public AccountsFunction(ILoggerFactory loggerFactory, IRepositoryService repositoryService)
-	{
-		_logger = loggerFactory.CreateLogger<UsersFunction>();
-		_repositoryService = repositoryService;
-	}
+	private readonly ILogger _logger = loggerFactory.CreateLogger<UsersFunction>();
 
 	[Function("accounts")]
 	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "put", "delete")] HttpRequestData req)
@@ -34,7 +28,7 @@ public class AccountsFunction : FunctionBase
 			return await AuthError(req, "AuthToken is empty");
 		}
 
-		var tokenDoc = await _repositoryService.GetTokenByIdAsync(token!);
+		var tokenDoc = await repositoryService.GetTokenByIdAsync(token!);
 		if (tokenDoc == null || tokenDoc.ExpiresAt < DateTimeOffset.UtcNow)
 		{
 			return await AuthError(req, "Invalid AuthToken");
@@ -86,7 +80,7 @@ public class AccountsFunction : FunctionBase
 				IsFavorite = createAccountReq.IsFavorite
 			};
 
-			await _repositoryService.CreateAccountAsync(account);
+			await repositoryService.CreateAccountAsync(account);
 
 			var apiResponse = new RecordResponseDto<AccountDto>
 			{
@@ -105,7 +99,7 @@ public class AccountsFunction : FunctionBase
 		var updateAccountReq = await ReadRequestBody<UpdateAccountDto>(req);
 		if (updateAccountReq != null)
 		{
-			var account = await _repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
+			var account = await repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
@@ -122,7 +116,7 @@ public class AccountsFunction : FunctionBase
 			account.Notes = updateAccountReq.Notes;
 			account.IsFavorite = updateAccountReq.IsFavorite;
 
-			await _repositoryService.UpdateAccountAsync(account);
+			await repositoryService.UpdateAccountAsync(account);
 
 			var apiResponse = new RecordResponseDto<AccountDto>
 			{
@@ -141,13 +135,13 @@ public class AccountsFunction : FunctionBase
 		var deleteAccountReq = await ReadRequestBody<DeleteAccountDto>(req);
 		if (deleteAccountReq != null)
 		{
-			var account = await _repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
+			var account = await repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
 			}
 
-			await _repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
+			await repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
 			return await Success(req, new DeletedResponseDto {IsSuccess = true, Result = true});
 		}
 
@@ -159,7 +153,7 @@ public class AccountsFunction : FunctionBase
 		var accountId = req.Query.Get("accountId");
 		if (accountId.IsNotNullOrWhiteSpace())
 		{
-			var account = await _repositoryService.GetAccountByIdAsync(accountId!);
+			var account = await repositoryService.GetAccountByIdAsync(accountId!);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
 			{
 				return await Error(req, "Account does not exist");
@@ -175,7 +169,7 @@ public class AccountsFunction : FunctionBase
 		}
 		else
 		{
-			var accounts = await _repositoryService.GetAccountsByUserIdAsync(tokenDoc.UserId);
+			var accounts = await repositoryService.GetAccountsByUserIdAsync(tokenDoc.UserId);
 			accounts = accounts.OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
 			var apiResponse = new RecordsResponseDto<AccountDto>
 			{

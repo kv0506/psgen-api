@@ -30,8 +30,6 @@ var host = new HostBuilder()
 				// Register Services
 		services.AddTransient<IDatabaseService, DatabaseService>();
 		services.AddTransient<IRepositoryService, RepositoryService>();
-		services.AddTransient<TableService>();
-		services.AddTransient<AccountMigration>();
 	}).Build();
 
 // Apply database migrations at startup
