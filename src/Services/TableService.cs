@@ -142,9 +142,7 @@ public class TableService
         }
 
         return documents;
-    }
-
-    private TableClient CreateTableClient()
+    }    public TableClient CreateTableClient()
     {
         return new TableClient(_configuration["StorageConnectionString"], _configuration["TableName"]);
     }

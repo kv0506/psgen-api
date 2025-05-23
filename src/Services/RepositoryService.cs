@@ -23,7 +23,7 @@ public class RepositoryService : IRepositoryService
 
 		var userId = Guid.Parse(id);
 		var dbUser = await _dbContext.Users.FindAsync(userId);
-		return dbUser?.ToDocument();
+		return dbUser?.ToEntity();
 	}
 
 	public async Task<User?> GetUserByUsernameAsync(string username)
@@ -32,7 +32,7 @@ public class RepositoryService : IRepositoryService
 
 		var dbUser = await _dbContext.Users
 			.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
-		return dbUser?.ToDocument();
+		return dbUser?.ToEntity();
 	}
 
 	public async Task<User?> GetUserByEmailAsync(string email)
@@ -41,19 +41,19 @@ public class RepositoryService : IRepositoryService
 
 		var dbUser = await _dbContext.Users
 			.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
-		return dbUser?.ToDocument();
+		return dbUser?.ToEntity();
 	}
 
 	public async Task<User> CreateUserAsync(User user)
 	{
 		if (user == null) throw new ArgumentNullException(nameof(user));
 
-		var dbUser = user.ToEntity();
+		var dbUser = user.ToDataModel();
 
 		await _dbContext.Users.AddAsync(dbUser);
 		await _dbContext.SaveChangesAsync();
 
-		return dbUser.ToDocument();
+		return dbUser.ToEntity();
 	}
 
 	public async Task<User?> UpdateUserAsync(User user)
@@ -75,7 +75,7 @@ public class RepositoryService : IRepositoryService
 
 		await _dbContext.SaveChangesAsync();
 
-		return existingUser.ToDocument();
+		return existingUser.ToEntity();
 	}
 
 	public async Task<bool> DeleteUserAsync(string id)
@@ -106,7 +106,7 @@ public class RepositoryService : IRepositoryService
 			.Where(a => a.UserId == userGuid)
 			.ToListAsync();
 
-		return dbAccounts.Select(a => a.ToDocument()).ToList();
+		return dbAccounts.Select(a => a.ToEntity()).ToList();
 	}
 
 	public async Task<Account?> GetAccountByIdAsync(string id)
@@ -116,19 +116,19 @@ public class RepositoryService : IRepositoryService
 		var accountId = Guid.Parse(id);
 		var dbAccount = await _dbContext.Accounts.FindAsync(accountId);
 
-		return dbAccount?.ToDocument();
+		return dbAccount?.ToEntity();
 	}
 
 	public async Task<Account> CreateAccountAsync(Account account)
 	{
 		if (account == null) throw new ArgumentNullException(nameof(account));
 
-		var dbAccount = account.ToEntity();
+		var dbAccount = account.ToDataModel();
 
 		await _dbContext.Accounts.AddAsync(dbAccount);
 		await _dbContext.SaveChangesAsync();
 
-		return dbAccount.ToDocument();
+		return dbAccount.ToEntity();
 	}
 
 	public async Task<Account?> UpdateAccountAsync(Account account)
@@ -155,7 +155,7 @@ public class RepositoryService : IRepositoryService
 
 		await _dbContext.SaveChangesAsync();
 
-		return existingAccount.ToDocument();
+		return existingAccount.ToEntity();
 	}
 
 	public async Task<bool> DeleteAccountAsync(string id)
@@ -184,7 +184,7 @@ public class RepositoryService : IRepositoryService
 		var tokenId = Guid.Parse(id);
 		var dbToken = await _dbContext.Tokens.FindAsync(tokenId);
 
-		return dbToken?.ToDocument();
+		return dbToken?.ToEntity();
 	}
 
 	public async Task<Token?> GetTokenBySecretAsync(string secret)
@@ -194,7 +194,7 @@ public class RepositoryService : IRepositoryService
 		var dbToken = await _dbContext.Tokens
 			.FirstOrDefaultAsync(t => t.Secret == secret);
 
-		return dbToken?.ToDocument();
+		return dbToken?.ToEntity();
 	}
 
 	public async Task<List<Token>> GetTokensByUserIdAsync(string userId)
@@ -206,19 +206,19 @@ public class RepositoryService : IRepositoryService
 			.Where(t => t.UserId == userGuid)
 			.ToListAsync();
 
-		return dbTokens.Select(t => t.ToDocument()).ToList();
+		return dbTokens.Select(t => t.ToEntity()).ToList();
 	}
 
 	public async Task<Token> CreateTokenAsync(Token token)
 	{
 		if (token == null) throw new ArgumentNullException(nameof(token));
 
-		var dbToken = token.ToEntity();
+		var dbToken = token.ToDataModel();
 
 		await _dbContext.Tokens.AddAsync(dbToken);
 		await _dbContext.SaveChangesAsync();
 
-		return dbToken.ToDocument();
+		return dbToken.ToEntity();
 	}
 
 	public async Task<bool> DeleteTokenAsync(string id)

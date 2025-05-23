@@ -7,103 +7,109 @@ namespace PsGenApi.Extensions;
 public static class MappingExtensions
 {
     // User mapping extensions
-    public static DbUser ToEntity(this User document)
+    public static DbUser ToDataModel(this User? entity)
     {
-        if (document == null) return null!;
+        if (entity == null) 
+	        return null!;
 
         return new DbUser
         {
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid() : Guid.Parse(document.Id),
-            Username = document.Username,
-            Email = document.Email,
-            Mobile = document.Mobile,
-            Salt = document.Salt,
-            Hash = document.Hash
+            Id = string.IsNullOrEmpty(entity.Id) ? Guid.NewGuid() : Guid.Parse(entity.Id),
+            Username = entity.Username,
+            Email = entity.Email,
+            Mobile = entity.Mobile,
+            Salt = entity.Salt,
+            Hash = entity.Hash
         };
     }
 
-    public static User ToDocument(this DbUser entity)
+    public static User ToEntity(this DbUser? dataModel)
     {
-        if (entity == null) return null!;
+        if (dataModel == null)
+	        return null!;
 
         return new User
         {
-            Id = entity.Id.ToString(),
-            Username = entity.Username ?? string.Empty,
-            Email = entity.Email ?? string.Empty,
-            Mobile = entity.Mobile ?? string.Empty,
-            Salt = entity.Salt ?? string.Empty,
-            Hash = entity.Hash ?? string.Empty
+            Id = dataModel.Id.ToString(),
+            Username = dataModel.Username ?? string.Empty,
+            Email = dataModel.Email ?? string.Empty,
+            Mobile = dataModel.Mobile ?? string.Empty,
+            Salt = dataModel.Salt ?? string.Empty,
+            Hash = dataModel.Hash ?? string.Empty
         };
     }
 
     // Account mapping extensions
-    public static DbAccount ToEntity(this Account document)
+    public static DbAccount ToDataModel(this Account? entity)
     {
-        if (document == null) return null!;
+        if (entity == null) 
+	        return null!;
 
         return new DbAccount
         {
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid() : Guid.Parse(document.Id),
-            UserId = Guid.Parse(document.UserId),
-            Category = document.Category,
-            Name = document.Name,
-            Username = document.Username,
-            Pattern = document.Pattern,
-            Length = document.Length,
-            IncludeSpecialCharacter = document.IncludeSpecialCharacter,
-            UseCustomSpecialCharacter = document.UseCustomSpecialCharacter,
-            CustomSpecialCharacter = document.CustomSpecialCharacter,
-            Notes = document.Notes,
-            IsFavorite = document.IsFavorite
-        };
-    }
-
-    public static Account ToDocument(this DbAccount entity)
-    {
-        if (entity == null) return null!;
-
-        return new Account
-        {
-            Id = entity.Id.ToString(),
-            UserId = entity.UserId.ToString(),
-            Category = entity.Category ?? string.Empty,
-            Name = entity.Name ?? string.Empty,
-            Username = entity.Username ?? string.Empty,
-            Pattern = entity.Pattern ?? string.Empty,
+            Id = string.IsNullOrEmpty(entity.Id) ? Guid.NewGuid() : Guid.Parse(entity.Id),
+            UserId = Guid.Parse(entity.UserId),
+            Category = entity.Category,
+            Name = entity.Name,
+            Username = entity.Username,
+            Pattern = entity.Pattern,
             Length = entity.Length,
             IncludeSpecialCharacter = entity.IncludeSpecialCharacter,
             UseCustomSpecialCharacter = entity.UseCustomSpecialCharacter,
-            CustomSpecialCharacter = entity.CustomSpecialCharacter ?? string.Empty,
-            Notes = entity.Notes ?? string.Empty,
+            CustomSpecialCharacter = entity.CustomSpecialCharacter,
+            Notes = entity.Notes,
             IsFavorite = entity.IsFavorite
         };
     }
 
-    // Token mapping extensions
-    public static DbToken ToEntity(this Token document)
+    public static Account ToEntity(this DbAccount? dataModel)
     {
-        if (document == null) return null!;
+        if (dataModel == null) 
+	        return null!;
 
-        return new DbToken
+        return new Account
         {
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid() : Guid.Parse(document.Id),
-            UserId = Guid.Parse(document.UserId),
-            Secret = document.Secret,
-            ExpiresAt = document.ExpiresAt
+            Id = dataModel.Id.ToString(),
+            UserId = dataModel.UserId.ToString(),
+            Category = dataModel.Category ?? string.Empty,
+            Name = dataModel.Name ?? string.Empty,
+            Username = dataModel.Username ?? string.Empty,
+            Pattern = dataModel.Pattern ?? string.Empty,
+            Length = dataModel.Length,
+            IncludeSpecialCharacter = dataModel.IncludeSpecialCharacter,
+            UseCustomSpecialCharacter = dataModel.UseCustomSpecialCharacter,
+            CustomSpecialCharacter = dataModel.CustomSpecialCharacter ?? string.Empty,
+            Notes = dataModel.Notes ?? string.Empty,
+            IsFavorite = dataModel.IsFavorite
         };
     }
 
-    public static Token ToDocument(this DbToken entity)
+    // Token mapping extensions
+    public static DbToken ToDataModel(this Token? entity)
     {
-        if (entity == null) return null!;
+        if (entity == null) 
+	        return null!;
+
+        return new DbToken
+        {
+            Id = string.IsNullOrEmpty(entity.Id) ? Guid.NewGuid() : Guid.Parse(entity.Id),
+            UserId = Guid.Parse(entity.UserId),
+            Secret = entity.Secret,
+            ExpiresAt = entity.ExpiresAt
+        };
+    }
+
+    public static Token ToEntity(this DbToken? dataModel)
+    {
+        if (dataModel == null) 
+	        return null!;
 
         return new Token
         {
-            Id = entity.Id.ToString(),
-            UserId = entity.UserId.ToString(),
-            Secret = entity.Secret ?? string.Empty,
-            ExpiresAt = entity.ExpiresAt
+            Id = dataModel.Id.ToString(),
+            UserId = dataModel.UserId.ToString(),
+            Secret = dataModel.Secret ?? string.Empty,
+            ExpiresAt = dataModel.ExpiresAt
         };
     }
 }

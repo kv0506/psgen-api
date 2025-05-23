@@ -1,6 +1,6 @@
 using Microsoft.Azure.Functions.Worker;
 
-namespace PsGenApi;
+namespace PsGenApi.Functions;
 
 public class KeepActiveFunction
 {

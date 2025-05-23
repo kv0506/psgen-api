@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PsGenApi.Services;
 
-internal class SerializationService
+public class SerializationService
 {
     public static string Serialize<T>(T obj)
     {
