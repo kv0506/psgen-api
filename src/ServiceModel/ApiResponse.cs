@@ -1,27 +1,27 @@
 ﻿namespace PsGenApi.ServiceModel;
 
-public class ApiResponse
+public class ApiResponseDto
 {
-    public object Result { get; set; }
+    public object Result { get; set; } = default!;
 
     public bool IsSuccess { get; set; }
 
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
 }
 
-public class ApiResponse<T> : ApiResponse
+public class ApiResponseDto<T> : ApiResponseDto
 {
-    public new T Result { get; set; }
+    public new T Result { get; set; } = default!;
 }
 
-public class DeletedResponse : ApiResponse<bool>
-{
-}
-
-public class RecordResponse<T> : ApiResponse<T>
+public class DeletedResponseDto : ApiResponseDto<bool>
 {
 }
 
-public class RecordsResponse<T> : ApiResponse<IList<T>>
+public class RecordResponseDto<T> : ApiResponseDto<T>
+{
+}
+
+public class RecordsResponseDto<T> : ApiResponseDto<IList<T>>
 {
 }

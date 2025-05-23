@@ -1,28 +1,28 @@
 ﻿namespace PsGenApi.ServiceModel;
 
-public class CreateAccount : AccountBase
+public class CreateAccountDto : AccountBaseDto
 {
 }
 
-public class UpdateAccount : AccountBase
+public class UpdateAccountDto : AccountBaseDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 }
 
-public class DeleteAccount
+public class DeleteAccountDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 }
 
-public class AccountBase
+public class AccountBaseDto
 {
-    public string Category { get; set; }
+    public string Category { get; set; } = string.Empty;
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public string Username { get; set; }
+    public string Username { get; set; } = string.Empty;
 
-	public string Pattern { get; set; }
+    public string Pattern { get; set; } = string.Empty;
 
     public int Length { get; set; }
 
@@ -30,15 +30,15 @@ public class AccountBase
 
     public bool UseCustomSpecialCharacter { get; set; }
 
-    public string CustomSpecialCharacter { get; set; }
+    public string CustomSpecialCharacter { get; set; } = string.Empty;
 
-    public string Notes { get; set; }
+    public string Notes { get; set; } = string.Empty;
 
     public bool IsFavorite { get; set; }
 }
 
 
-public class Account : AccountBase
+public class AccountDto : AccountBaseDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 }
