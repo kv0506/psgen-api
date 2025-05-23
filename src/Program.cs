@@ -21,9 +21,10 @@ var host = new HostBuilder()
 
 		// Configure EF Core with PostgreSQL
 		services.AddDbContext<PsGenDbContext>(options =>
-			options.UseNpgsql(context.Configuration.GetConnectionString("DefaultConnection"),
+			options.UseNpgsql(context.Configuration.GetValue<string>("ConnectionStrings_DefaultConnection"),
 				sqlOptions =>
-				{					sqlOptions.MigrationsAssembly("PsGenApi");
+				{
+					sqlOptions.MigrationsAssembly("PsGenApi");
 					sqlOptions.EnableRetryOnFailure(5);
 				})); 
 				// Register Services
