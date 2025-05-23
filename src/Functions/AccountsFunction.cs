@@ -34,7 +34,7 @@ public class AccountsFunction : FunctionBase
 			return await AuthError(req, "AuthToken is empty");
 		}
 
-		var tokenDoc = await _repositoryService.GetTokenBySecretAsync(token!);
+		var tokenDoc = await _repositoryService.GetTokenByIdAsync(token!);
 		if (tokenDoc == null || tokenDoc.ExpiresAt < DateTimeOffset.UtcNow)
 		{
 			return await AuthError(req, "Invalid AuthToken");
