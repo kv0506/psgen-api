@@ -1,0 +1,34 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# VS and VS Code files
+**/.vs/
+**/.vscode/
+**/*.user
+**/*.userosscache
+**/*.dbmdl
+**/*.jfm
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Node.js files (if any)
+**/node_modules/
+**/npm-debug.log
+
+# Local environment settings
+**/local.settings.json
+
+# Debug logs
+**/logs/
+
+# Test Results
+**/TestResults/

@@ -1,0 +1,82 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Deploy to Hetzner
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HETZNER_HOST }}
+        username: ${{ secrets.HETZNER_USERNAME }}
+        key: ${{ secrets.HETZNER_SSH_KEY }}
+        script: |
+          # Create deployment directory if it doesn't exist
+          mkdir -p ~/psgen-api
+          
+          # Create docker-compose file for production
+          cat > ~/psgen-api/docker-compose.yml << 'EOL'
+          version: '3.8'
+          
+          services:
+            psgen-api:
+              image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+              ports:
+                - "80:80"
+                - "443:443"
+              environment:
+                - ASPNETCORE_ENVIRONMENT=Production
+                - ConnectionStrings__DefaultConnection=${{ secrets.DB_CONNECTION_STRING }}
+                - Jwt__Key=${{ secrets.JWT_KEY }}
+                - Jwt__Issuer=psgen-api
+                - Jwt__Audience=psgen-clients
+                - Jwt__ExpiryInDays=90
+              restart: unless-stopped
+              depends_on:
+                - postgres
+          
+            postgres:
+              image: postgres:16-alpine
+              environment:
+                - POSTGRES_USER=${{ secrets.DB_USER }}
+                - POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
+                - POSTGRES_DB=${{ secrets.DB_NAME }}
+              volumes:
+                - postgres-data:/var/lib/postgresql/data
+              restart: unless-stopped
+          
+          volumes:
+            postgres-data:
+          EOL
+          
+          # Pull the latest image and restart containers
+          cd ~/psgen-api
+          docker-compose pull
+          docker-compose up -d
