@@ -26,6 +26,42 @@ public class AccountMigration
 
 		var tableClient = _tableService.CreateTableClient();
 
+		var tableUsers = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == "Users");
+
+		await foreach (var tableUser in tableUsers)
+		{
+			try
+			{
+				var user = SerializationService.Deserialize<User>(tableUser.Document);
+
+				if (user != null)
+				{
+					// Get users from PostgreSQL
+					var dbUser = await _repositoryService.GetUserByIdAsync(user.Id);
+					if (dbUser == null)
+					{
+						try
+						{
+							// Save user to PostgreSQL
+							await _repositoryService.CreateUserAsync(user);
+							_logger.LogInformation($"Migrated user {user.Id} for user {user.Username}");
+						}
+						catch (Exception ex)
+						{
+							result.FailureCount++;
+							result.Errors.Add($"Failed to migrate account {user.Id}: {ex.Message}");
+							_logger.LogError(ex, $"Failed to migrate user {user.Id} for user {user.Username}");
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				result.Errors.Add("Failed to process users");
+				_logger.LogError(ex, "Exception while processing user migration");
+			}
+		}
+
 		var tableAccounts = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == "Accounts");
 
 		await foreach (var tableAccount in tableAccounts)
@@ -58,8 +94,8 @@ public class AccountMigration
 			}
 			catch (Exception ex)
 			{
-				result.Errors.Add($"Failed to process");
-				_logger.LogError(ex, $"Exception while processing");
+				result.Errors.Add("Failed to process accounts");
+				_logger.LogError(ex, "Exception while processing account migration");
 			}
 		}
 
