@@ -9,21 +9,13 @@ namespace PsGenApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountsController : BaseController
+public class AccountsController(ILogger<AccountsController> logger, IRepositoryService repositoryService)
+	: BaseController
 {
-	private readonly ILogger<AccountsController> _logger;
-	private readonly IRepositoryService _repositoryService;
-
-	public AccountsController(ILogger<AccountsController> logger, IRepositoryService repositoryService)
-	{
-		_logger = logger;
-		_repositoryService = repositoryService;
-	}
-
 	[HttpPut]
 	public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto createAccountReq)
 	{
-		_logger.LogInformation("Creating account");
+		logger.LogInformation("Creating account");
 
 		if (createAccountReq != null)
 		{
@@ -45,7 +37,7 @@ public class AccountsController : BaseController
 				IsFavorite = createAccountReq.IsFavorite
 			};
 
-			await _repositoryService.CreateAccountAsync(account);
+			await repositoryService.CreateAccountAsync(account);
 
 			var apiResponse = new RecordResponseDto<AccountDto>
 			{
@@ -62,13 +54,13 @@ public class AccountsController : BaseController
 	[HttpPost]
 	public async Task<IActionResult> UpdateAccount([FromBody] UpdateAccountDto updateAccountReq)
 	{
-		_logger.LogInformation("Updating account");
+		logger.LogInformation("Updating account");
 
 		if (updateAccountReq != null)
 		{
 			var userId = GetCurrentUserId();
 
-			var account = await _repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
+			var account = await repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(userId))
 			{
 				return Error("Account does not exist");
@@ -85,7 +77,7 @@ public class AccountsController : BaseController
 			account.Notes = updateAccountReq.Notes;
 			account.IsFavorite = updateAccountReq.IsFavorite;
 
-			await _repositoryService.UpdateAccountAsync(account);
+			await repositoryService.UpdateAccountAsync(account);
 
 			var apiResponse = new RecordResponseDto<AccountDto>
 			{
@@ -102,19 +94,19 @@ public class AccountsController : BaseController
 	[HttpDelete]
 	public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDto deleteAccountReq)
 	{
-		_logger.LogInformation("Deleting account");
+		logger.LogInformation("Deleting account");
 
 		if (deleteAccountReq != null)
 		{
 			var userId = GetCurrentUserId();
 
-			var account = await _repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
+			var account = await repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(userId))
 			{
 				return Error("Account does not exist");
 			}
 
-			await _repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
+			await repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
 			return Success(new DeletedResponseDto { IsSuccess = true, Result = true });
 		}
 
@@ -124,13 +116,13 @@ public class AccountsController : BaseController
 	[HttpGet]
 	public async Task<IActionResult> GetAccount([FromQuery] string? accountId = null)
 	{
-		_logger.LogInformation("Getting account(s)");
+		logger.LogInformation("Getting account(s)");
 
 		var userId = GetCurrentUserId();
 
 		if (accountId.IsNotNullOrWhiteSpace())
 		{
-			var account = await _repositoryService.GetAccountByIdAsync(accountId);
+			var account = await repositoryService.GetAccountByIdAsync(accountId!);
 			if (account == null || account.UserId.IsNotEquals(userId))
 			{
 				return Error("Account does not exist");
@@ -146,7 +138,7 @@ public class AccountsController : BaseController
 		}
 		else
 		{
-			var accounts = await _repositoryService.GetAccountsByUserIdAsync(GetCurrentUserId());
+			var accounts = await repositoryService.GetAccountsByUserIdAsync(GetCurrentUserId());
 			accounts = accounts.OrderBy(x => x.Category).ThenBy(x => x.Name).ToList();
 			var apiResponse = new RecordsResponseDto<AccountDto>
 			{

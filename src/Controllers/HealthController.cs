@@ -4,19 +4,12 @@ namespace PsGenApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class HealthController : ControllerBase
+public class HealthController(ILogger<HealthController> logger) : ControllerBase
 {
-    private readonly ILogger<HealthController> _logger;
-
-    public HealthController(ILogger<HealthController> logger)
-    {
-        _logger = logger;
-    }
-
-    [HttpGet]
+	[HttpGet]
     public IActionResult Check()
     {
-        _logger.LogInformation("Health check executed at {Time}", DateTime.UtcNow);
+        logger.LogInformation("Health check executed at {Time}", DateTime.UtcNow);
         return Ok(new
         {
             Status = "Healthy",

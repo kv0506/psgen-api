@@ -8,25 +8,17 @@ namespace PsGenApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : BaseController
+public class UsersController(ILogger<UsersController> logger, IRepositoryService repositoryService)
+	: BaseController
 {
-    private readonly ILogger<UsersController> _logger;
-    private readonly IRepositoryService _repositoryService;
-
-    public UsersController(ILogger<UsersController> logger, IRepositoryService repositoryService)
-    {
-        _logger = logger;
-        _repositoryService = repositoryService;
-    }
-
-    [HttpPut]
+	[HttpPut]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserReq)
     {
-        _logger.LogInformation("Creating user");
+        logger.LogInformation("Creating user");
 
         if (createUserReq != null)
         {
-            var user = await _repositoryService.GetUserByUsernameAsync(createUserReq.Username);
+            var user = await repositoryService.GetUserByUsernameAsync(createUserReq.Username);
             if (user == null)
             {
                 user = new User
@@ -40,7 +32,7 @@ public class UsersController : BaseController
                 
                 user.Hash = HashService.CreateHash(createUserReq.Password, user.Salt);
 
-                await _repositoryService.CreateUserAsync(user);
+                await repositoryService.CreateUserAsync(user);
 
                 var apiResponse = new RecordResponseDto<UserDto>
                 {
@@ -66,11 +58,11 @@ public class UsersController : BaseController
     [HttpPost]
     public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateUserReq)
     {
-        _logger.LogInformation("Updating user");
+        logger.LogInformation("Updating user");
 
         if (updateUserReq != null)
         {
-            var user = await _repositoryService.GetUserByIdAsync(updateUserReq.Id);
+            var user = await repositoryService.GetUserByIdAsync(updateUserReq.Id);
             if (user != null)
             {
                 if (updateUserReq.NewPassword.IsNotNullOrWhiteSpace())
@@ -93,7 +85,7 @@ public class UsersController : BaseController
                     user.Mobile = updateUserReq.Mobile;
                 }
 
-                await _repositoryService.UpdateUserAsync(user);
+                await repositoryService.UpdateUserAsync(user);
 
                 var apiResponse = new RecordResponseDto<UserDto>
                 {

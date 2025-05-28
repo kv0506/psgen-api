@@ -7,25 +7,17 @@ namespace PsGenApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController : BaseController
+public class LoginController(ILogger<LoginController> logger, IRepositoryService repositoryService)
+	: BaseController
 {
-    private readonly ILogger<LoginController> _logger;
-    private readonly IRepositoryService _repositoryService;
-
-    public LoginController(ILogger<LoginController> logger, IRepositoryService repositoryService)
-    {
-        _logger = logger;
-        _repositoryService = repositoryService;
-    }
-
-    [HttpPost]
+	[HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto loginReq)
     {
-        _logger.LogInformation("Processing login request");
+        logger.LogInformation("Processing login request");
 
         if (loginReq != null)
         {
-            var user = await _repositoryService.GetUserByUsernameAsync(loginReq.Username);
+            var user = await repositoryService.GetUserByUsernameAsync(loginReq.Username);
 
             if (user != null && HashService.VerifyHash(loginReq.Password, user.Salt, user.Hash))
             {
@@ -37,7 +29,7 @@ public class LoginController : BaseController
                     ExpiresAt = DateTimeOffset.UtcNow.AddDays(90)
                 };
 
-                await _repositoryService.CreateTokenAsync(token);
+                await repositoryService.CreateTokenAsync(token);
 
                 var apiResponse = new RecordResponseDto<UserSessionDto>
                 {

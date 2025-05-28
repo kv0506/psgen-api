@@ -14,11 +14,6 @@ public class BaseController : ControllerBase
         return Ok(apiResponse);
     }
 
-    protected IActionResult HttpMethodNotSupportedError()
-    {
-        return BadRequest(new ApiResponseDto { IsSuccess = false, Message = "Http Method not supported" });
-    }
-
     protected IActionResult InvalidRequestPayloadError()
     {
         return BadRequest(new ApiResponseDto { IsSuccess = false, Message = "Invalid request payload" });
@@ -29,13 +24,13 @@ public class BaseController : ControllerBase
         return BadRequest(new ApiResponseDto { IsSuccess = false, Message = error });
     }
 
-    protected IActionResult AuthError(string error)
-    {
-        return Unauthorized(new ApiResponseDto { IsSuccess = false, Message = error });
-    }
-
     protected string GetCurrentUserId()
 	{
-		return User.FindFirst("sub")?.Value ?? string.Empty;
+		if (HttpContext.Items.ContainsKey("UserId"))
+		{
+            return HttpContext.Items["UserId"]?.ToString() ?? string.Empty;
+		}
+
+		return string.Empty;
 	}
 }

@@ -2,23 +2,16 @@ using PsGenApi.Services;
 
 namespace PsGenApi.Middleware;
 
-public class AuthTokenMiddleware
+public class AuthTokenMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public AuthTokenMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
-    public async Task InvokeAsync(HttpContext context, IRepositoryService repositoryService, ILogger<AuthTokenMiddleware> logger)
+	public async Task InvokeAsync(HttpContext context, IRepositoryService repositoryService, ILogger<AuthTokenMiddleware> logger)
     {
         // Skip authentication for login and specific paths
         if (context.Request.Path.StartsWithSegments("/api/login") ||
             context.Request.Path.StartsWithSegments("/swagger") ||
             context.Request.Path.StartsWithSegments("/health"))
         {
-            await _next(context);
+            await next(context);
             return;
         }
 
@@ -43,6 +36,6 @@ public class AuthTokenMiddleware
         context.Items["UserId"] = token.UserId;
         context.Items["TokenId"] = token.Id;
 
-        await _next(context);
+        await next(context);
     }
 }
