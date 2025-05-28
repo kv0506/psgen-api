@@ -1,7 +1,7 @@
 [Unit]
 Description=PsGen API Service
-After=docker.service
-Requires=docker.service
+After=docker.service postgresql.service
+Requires=docker.service postgresql.service
 
 [Service]
 Type=oneshot
