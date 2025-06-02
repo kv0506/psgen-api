@@ -37,47 +37,28 @@ Swagger UI: https://localhost:5001/swagger
 
 ## Production Deployment
 
-The application is configured for automatic deployment to a Hetzner Ubuntu VM using GitHub Actions.
+The application is configured for automatic deployment to a VPS using GitHub Actions.
 
-### Server Setup
+### Server Configuration
 
-1. Set up the server using the provided script:
-   ```
-   chmod +x setup-server.sh
-   ./setup-server.sh
-   ```
+PostgreSQL is already deployed and configured on the VPS to accept connections from Docker containers:
 
-2. Configure PostgreSQL:
-   ```
-   chmod +x db-init.sh
-   ./db-init.sh
-   ```
-
-### PostgreSQL Configuration for Docker Containers
-
-The setup-server.sh script configures PostgreSQL to accept connections from Docker containers. It:
-
-1. Sets PostgreSQL to listen on all interfaces
-2. Configures pg_hba.conf to allow connections from Docker subnet (172.17.0.0/16)
-3. Creates a database and user with appropriate permissions
-
-Important configurations:
-- PostgreSQL runs directly on the VM (not in a container)
+- PostgreSQL runs directly on the VPS (not in a container)
 - The web application container connects to PostgreSQL using `host.docker.internal` as the hostname
-- The connection string in the container should be: `Host=host.docker.internal;Database=psgendb;Username=psgenuser;Password=your_secure_password`
+- The connection string in the container is configured as: `Host=host.docker.internal;Database=psgendb;Username=psgenuser;Password=your_secure_password`
+
+### Container Deployment
+
+The application is deployed as a Docker container to the same VPS where PostgreSQL is running. GitHub Actions automates this deployment process.
 
 ### Required GitHub Secrets
 
 Set the following secrets in your GitHub repository:
 
-- `HETZNER_HOST`: IP address of your Hetzner server
-- `HETZNER_USERNAME`: SSH username
-- `HETZNER_SSH_KEY`: SSH private key for authentication (the entire key, including BEGIN and END lines)
-- `DB_CONNECTION_STRING`: PostgreSQL connection string (see below)
-- `JWT_KEY`: Secret key for JWT token generation (at least 32 characters)
-
-> **PostgreSQL Connection String for GitHub Actions**: 
-> `Host=host.docker.internal;Database=psgendb;Username=psgenuser;Password=your_secure_password`
+- `VPS_HOST`: IP address of your VPS
+- `VPS_USERNAME`: SSH username
+- `VPS_SSH_KEY`: SSH private key for authentication (the entire key, including BEGIN and END lines)
+- `DB_CONNECTION_STRING`: PostgreSQL connection string (format: `Host=host.docker.internal;Database=psgendb;Username=psgenuser;Password=your_secure_password`)
 
 #### Setting up SSH Key for GitHub Actions
 
@@ -88,11 +69,11 @@ Set the following secrets in your GitHub repository:
 
 2. Add the public key to your server's authorized_keys file:
    ```
-   # On your Hetzner server
+   # On your VPS
    echo "your-public-key-here" >> ~/.ssh/authorized_keys
    ```
 
-3. Add the private key to GitHub secrets as `HETZNER_SSH_KEY`
+3. Add the private key to GitHub secrets as `VPS_SSH_KEY`
 
 ### Manual Deployment
 
@@ -119,10 +100,6 @@ Set the following secrets in your GitHub repository:
        environment:
          - ASPNETCORE_ENVIRONMENT=Production
          - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Database=psgendb;Username=psgenuser;Password=your_secure_password
-         - Jwt__Key=your_secure_jwt_key
-         - Jwt__Issuer=psgen-api
-         - Jwt__Audience=psgen-clients
-         - Jwt__ExpiryInDays=90
        extra_hosts:
          - "host.docker.internal:host-gateway"
        restart: unless-stopped
