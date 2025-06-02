@@ -1,4 +1,4 @@
-name: Deploy to Hetzner
+name: Deploy to VPS
 
 on:
   push:
@@ -31,16 +31,17 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
-    - name: Deploy to Hetzner
+    - name: Deploy to VPS
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.HETZNER_HOST }}
-        username: ${{ secrets.HETZNER_USERNAME }}
-        key: ${{ secrets.HETZNER_SSH_KEY }}
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
         script: |
           # Create deployment directory if it doesn't exist
           mkdir -p ~/psgen-api
-            # Create docker-compose file for production
+          
+          # Create docker-compose file for production
           cat > ~/psgen-api/docker-compose.yml << 'EOL'
           version: '3.8'
           
@@ -49,25 +50,10 @@ jobs:
               image: ghcr.io/${{ github.repository }}:${{ github.sha }}
               ports:
                 - "5000:80"
-              environment:
-                - ASPNETCORE_ENVIRONMENT=Production
-                - ConnectionStrings__DefaultConnection=${{ secrets.DB_CONNECTION_STRING }}
-                - Jwt__Key=${{ secrets.JWT_KEY }}
-                - Jwt__Issuer=psgen-api
-                - Jwt__Audience=psgen-clients
-                - Jwt__ExpiryInDays=90
-              extra_hosts:
-                - "host.docker.internal:host-gateway"
-              restart: unless-stopped
-          EOL
                 - "443:443"
               environment:
                 - ASPNETCORE_ENVIRONMENT=Production
                 - ConnectionStrings__DefaultConnection=${{ secrets.DB_CONNECTION_STRING }}
-                - Jwt__Key=${{ secrets.JWT_KEY }}
-                - Jwt__Issuer=psgen-api
-                - Jwt__Audience=psgen-clients
-                - Jwt__ExpiryInDays=90
               extra_hosts:
                 - "host.docker.internal:host-gateway"
               restart: unless-stopped
