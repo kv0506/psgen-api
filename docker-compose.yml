@@ -5,15 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:      - "5000:80"
+    ports:      
+      - "5000:80"
       - "5001:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Database=psgendb;Username=postgres;Password=postgres
-      - Jwt__Key=your-development-key-at-least-32-characters-long
-      - Jwt__Issuer=psgen-api
-      - Jwt__Audience=psgen-clients
-      - Jwt__ExpiryInDays=90
+      - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Database=psgen;Username=psgenuser;Password=your-password
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
