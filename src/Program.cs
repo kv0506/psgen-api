@@ -1,10 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
+using PsGenApi;
 using PsGenApi.DataModel;
 using PsGenApi.Services;
-using PsGenApi;
 
 var host = new HostBuilder()
 	.ConfigureFunctionsWorkerDefaults()
@@ -26,8 +25,8 @@ var host = new HostBuilder()
 				{
 					sqlOptions.MigrationsAssembly("PsGenApi");
 					sqlOptions.EnableRetryOnFailure(5);
-				})); 
-				// Register Services
+				}));
+		// Register Services
 		services.AddTransient<IDatabaseService, DatabaseService>();
 		services.AddTransient<IRepositoryService, RepositoryService>();
 		services.AddTransient<TableService>();
@@ -36,7 +35,8 @@ var host = new HostBuilder()
 
 // Apply database migrations at startup
 using (var scope = host.Services.CreateScope())
-{	var services = scope.ServiceProvider;
+{
+	var services = scope.ServiceProvider;
 	try
 	{
 		var dbService = services.GetRequiredService<IDatabaseService>();

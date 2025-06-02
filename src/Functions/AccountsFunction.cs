@@ -19,49 +19,30 @@ public class AccountsFunction : FunctionBase
 	}
 
 	[Function("accounts")]
-	public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "put", "delete")] HttpRequestData req)
+	public async Task<HttpResponseData> Run(
+		[HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "put", "delete")] HttpRequestData req)
 	{
 		_logger.LogInformation("Executing accounts function");
 
-		if (!req.Headers.Contains("AuthToken"))
-		{
-			return await AuthError(req, "AuthToken header is missing");
-		}            
-		
+		if (!req.Headers.Contains("AuthToken")) return await AuthError(req, "AuthToken header is missing");
+
 		var token = req.Headers.GetValues("AuthToken").FirstOrDefault();
-		if (token.IsNullOrWhiteSpace())
-		{
-			return await AuthError(req, "AuthToken is empty");
-		}
+		if (token.IsNullOrWhiteSpace()) return await AuthError(req, "AuthToken is empty");
 
 		var tokenDoc = await _repositoryService.GetTokenByIdAsync(token!);
 		if (tokenDoc == null || tokenDoc.ExpiresAt < DateTimeOffset.UtcNow)
-		{
 			return await AuthError(req, "Invalid AuthToken");
-		}
 
 		var httpMethod = req.Method.ToLowerInvariant();
 
-		if (httpMethod == "put")
-		{
-			return await HandleCreateAccountAsync(req, tokenDoc);
-		}
+		if (httpMethod == "put") return await HandleCreateAccountAsync(req, tokenDoc);
 
-		if (httpMethod == "post")
-		{
-			return await HandleUpdateAccountAsync(req, tokenDoc);
-		}
+		if (httpMethod == "post") return await HandleUpdateAccountAsync(req, tokenDoc);
 
-		if (httpMethod == "delete")
-		{
-			return await HandleDeleteAccountAsync(req, tokenDoc);
-		}
+		if (httpMethod == "delete") return await HandleDeleteAccountAsync(req, tokenDoc);
 
-		if (httpMethod == "get")
-		{
-			return await HandleGetAccountAsync(req, tokenDoc);
-		}
-             
+		if (httpMethod == "get") return await HandleGetAccountAsync(req, tokenDoc);
+
 		return await HttpMethodNotSupportedError(req);
 	}
 
@@ -81,7 +62,7 @@ public class AccountsFunction : FunctionBase
 				Length = createAccountReq.Length,
 				IncludeSpecialCharacter = createAccountReq.IncludeSpecialCharacter,
 				UseCustomSpecialCharacter = createAccountReq.UseCustomSpecialCharacter,
-				CustomSpecialCharacter = createAccountReq.CustomSpecialCharacter,                    
+				CustomSpecialCharacter = createAccountReq.CustomSpecialCharacter,
 				Notes = createAccountReq.Notes,
 				IsFavorite = createAccountReq.IsFavorite
 			};
@@ -98,8 +79,8 @@ public class AccountsFunction : FunctionBase
 		}
 
 		return await InvalidRequestPayloadError(req);
-	}        
-	
+	}
+
 	private async Task<HttpResponseData> HandleUpdateAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
 		var updateAccountReq = await ReadRequestBody<UpdateAccountDto>(req);
@@ -107,9 +88,7 @@ public class AccountsFunction : FunctionBase
 		{
 			var account = await _repositoryService.GetAccountByIdAsync(updateAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
-			{
 				return await Error(req, "Account does not exist");
-			}
 
 			account.Name = updateAccountReq.Name;
 			account.Category = updateAccountReq.Category;
@@ -135,7 +114,7 @@ public class AccountsFunction : FunctionBase
 
 		return await InvalidRequestPayloadError(req);
 	}
-	
+
 	private async Task<HttpResponseData> HandleDeleteAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
 		var deleteAccountReq = await ReadRequestBody<DeleteAccountDto>(req);
@@ -143,17 +122,15 @@ public class AccountsFunction : FunctionBase
 		{
 			var account = await _repositoryService.GetAccountByIdAsync(deleteAccountReq.Id);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
-			{
 				return await Error(req, "Account does not exist");
-			}
 
 			await _repositoryService.DeleteAccountAsync(deleteAccountReq.Id);
-			return await Success(req, new DeletedResponseDto {IsSuccess = true, Result = true});
+			return await Success(req, new DeletedResponseDto { IsSuccess = true, Result = true });
 		}
 
 		return await InvalidRequestPayloadError(req);
 	}
-	
+
 	private async Task<HttpResponseData> HandleGetAccountAsync(HttpRequestData req, Token tokenDoc)
 	{
 		var accountId = req.Query.Get("accountId");
@@ -161,9 +138,7 @@ public class AccountsFunction : FunctionBase
 		{
 			var account = await _repositoryService.GetAccountByIdAsync(accountId!);
 			if (account == null || account.UserId.IsNotEquals(tokenDoc.UserId))
-			{
 				return await Error(req, "Account does not exist");
-			}
 
 			var apiResponse = new RecordResponseDto<AccountDto>
 			{
