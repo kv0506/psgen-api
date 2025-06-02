@@ -1,15 +1,13 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using PsGenApi.Document;
 using PsGenApi.ServiceModel;
-using PsGenApi.Services;
 
 namespace PsGenApi.Functions;
 
 public class MigrationFunction : FunctionBase
 {
-	private readonly ILogger _logger;
 	private readonly AccountMigration _accountMigration;
+	private readonly ILogger _logger;
 
 	public MigrationFunction(
 		ILoggerFactory loggerFactory,
@@ -21,7 +19,8 @@ public class MigrationFunction : FunctionBase
 
 	[Function("migrate-data")]
 	public async Task<HttpResponseData> Run(
-		[HttpTrigger(AuthorizationLevel.Admin, "post")] HttpRequestData req)
+		[HttpTrigger(AuthorizationLevel.Admin, "post")]
+		HttpRequestData req)
 	{
 		_logger.LogInformation("Account migration function started");
 
@@ -31,16 +30,17 @@ public class MigrationFunction : FunctionBase
 
 			var response = new
 			{
-				SuccessCount = result.SuccessCount,
-				FailureCount = result.FailureCount,
-				SkippedCount = result.SkippedCount,
-				Errors = result.Errors
+				result.SuccessCount,
+				result.FailureCount,
+				result.SkippedCount,
+				result.Errors
 			};
 
 			return await Success(req, new ApiResponseDto
 			{
 				IsSuccess = result.FailureCount == 0,
-				Message = $"Migration completed: {result.SuccessCount} accounts migrated, {result.SkippedCount} skipped, {result.FailureCount} failed",
+				Message =
+					$"Migration completed: {result.SuccessCount} accounts migrated, {result.SkippedCount} skipped, {result.FailureCount} failed",
 				Result = response
 			});
 		}

@@ -42,7 +42,7 @@ public class LoginFunction(ILoggerFactory loggerFactory, IRepositoryService repo
 
 				var apiResponse = new RecordResponseDto<UserSessionDto>
 				{
-					IsSuccess = true, 
+					IsSuccess = true,
 					Result = new UserSessionDto
 					{
 						Id = token.Id,

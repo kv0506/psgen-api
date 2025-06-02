@@ -1,14 +1,14 @@
 ﻿using PsGenApi.Document;
-using PsGenApi.Services;
 using PsGenApi.Entity;
+using PsGenApi.Services;
 
 namespace PsGenApi;
 
 public class AccountMigration
 {
-	private readonly TableService _tableService;
-	private readonly IRepositoryService _repositoryService;
 	private readonly ILogger<AccountMigration> _logger;
+	private readonly IRepositoryService _repositoryService;
+	private readonly TableService _tableService;
 
 	public AccountMigration(
 		TableService tableService,
@@ -29,7 +29,6 @@ public class AccountMigration
 		var tableAccounts = tableClient.QueryAsync<DocumentEntity>(ent => ent.PartitionKey == "Accounts");
 
 		await foreach (var tableAccount in tableAccounts)
-		{
 			try
 			{
 				var account = SerializationService.Deserialize<Account>(tableAccount.Document);
@@ -39,7 +38,6 @@ public class AccountMigration
 					// Get accounts for this user from PostgreSQL
 					var dbAccount = await _repositoryService.GetAccountByIdAsync(account.Id);
 					if (dbAccount == null)
-					{
 						try
 						{
 							// Save account to PostgreSQL
@@ -53,15 +51,13 @@ public class AccountMigration
 							result.Errors.Add($"Failed to migrate account {account.Id}: {ex.Message}");
 							_logger.LogError(ex, $"Failed to migrate account {account.Id} for user {account.UserId}");
 						}
-					}
 				}
 			}
 			catch (Exception ex)
 			{
-				result.Errors.Add($"Failed to process");
-				_logger.LogError(ex, $"Exception while processing");
+				result.Errors.Add("Failed to process");
+				_logger.LogError(ex, "Exception while processing");
 			}
-		}
 
 		return result;
 	}
@@ -72,5 +68,5 @@ public class MigrationResult
 	public int SuccessCount { get; set; }
 	public int FailureCount { get; set; }
 	public int SkippedCount { get; set; }
-	public List<string> Errors { get; set; } = new List<string>();
+	public List<string> Errors { get; set; } = new();
 }
