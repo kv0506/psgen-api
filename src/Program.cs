@@ -1,13 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PsGenApi.DataModel;
 using PsGenApi.Middleware;
 using PsGenApi.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,8 +98,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Use the custom AuthToken middleware
 app.UseMiddleware<AuthTokenMiddleware>();
