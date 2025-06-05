@@ -7,16 +7,9 @@ using PsGenApi.Services;
 
 namespace PsGenApi.Functions;
 
-public class UsersFunction : FunctionBase
+public class UsersFunction(ILoggerFactory loggerFactory, TableService tableService) : FunctionBase
 {
-	private readonly ILogger _logger;
-	private readonly IRepositoryService _repositoryService;
-
-	public UsersFunction(ILoggerFactory loggerFactory, IRepositoryService repositoryService)
-	{
-		_logger = loggerFactory.CreateLogger<UsersFunction>();
-		_repositoryService = repositoryService;
-	}
+	private readonly ILogger _logger = loggerFactory.CreateLogger<UsersFunction>();
 
 	[Function("users")]
 	public async Task<HttpResponseData> Run(
@@ -38,7 +31,7 @@ public class UsersFunction : FunctionBase
 		var createUserReq = await ReadRequestBody<CreateUserDto>(req);
 		if (createUserReq != null)
 		{
-			var user = await _repositoryService.GetUserByUsernameAsync(createUserReq.Username);
+			var user = await tableService.GetUserDocumentByUsernameAsync(createUserReq.Username);
 			if (user == null)
 			{
 				user = new User
@@ -52,7 +45,7 @@ public class UsersFunction : FunctionBase
 
 				user.Hash = HashService.CreateHash(createUserReq.Password, user.Salt);
 
-				await _repositoryService.CreateUserAsync(user);
+				await tableService.CreateOrUpdateUserDocumentAsync(user);
 
 				var apiResponse = new RecordResponseDto<UserDto>
 				{
@@ -80,7 +73,7 @@ public class UsersFunction : FunctionBase
 		var updateUserReq = await ReadRequestBody<UpdateUserDto>(req);
 		if (updateUserReq != null)
 		{
-			var user = await _repositoryService.GetUserByIdAsync(updateUserReq.Id);
+			var user = await tableService.GetUserDocumentByUserIdAsync(updateUserReq.Id);
 			if (user != null)
 			{
 				if (updateUserReq.NewPassword.IsNotNullOrWhiteSpace())
@@ -95,7 +88,7 @@ public class UsersFunction : FunctionBase
 
 				if (updateUserReq.Mobile.IsNotNullOrWhiteSpace()) user.Mobile = updateUserReq.Mobile;
 
-				await _repositoryService.UpdateUserAsync(user);
+				await tableService.CreateOrUpdateUserDocumentAsync(user);
 
 				var apiResponse = new RecordResponseDto<UserDto>
 				{
