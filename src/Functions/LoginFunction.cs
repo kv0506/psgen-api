@@ -6,8 +6,7 @@ using PsGenApi.Services;
 
 namespace PsGenApi.Functions;
 
-public class LoginFunction(ILoggerFactory loggerFactory, IRepositoryService repositoryService)
-	: FunctionBase
+public class LoginFunction(ILoggerFactory loggerFactory, TableService tableService) : FunctionBase
 {
 	private readonly ILogger _logger = loggerFactory.CreateLogger<LoginFunction>();
 
@@ -26,7 +25,7 @@ public class LoginFunction(ILoggerFactory loggerFactory, IRepositoryService repo
 		var loginReq = await ReadRequestBody<LoginRequestDto>(req);
 		if (loginReq != null)
 		{
-			var user = await repositoryService.GetUserByUsernameAsync(loginReq.Username);
+			var user = await tableService.GetUserDocumentByUsernameAsync(loginReq.Username);
 
 			if (user != null && HashService.VerifyHash(loginReq.Password, user.Salt, user.Hash))
 			{
@@ -38,7 +37,7 @@ public class LoginFunction(ILoggerFactory loggerFactory, IRepositoryService repo
 					ExpiresAt = DateTimeOffset.UtcNow.AddDays(90)
 				};
 
-				await repositoryService.CreateTokenAsync(token);
+				await tableService.CreateOrUpdateTokenDocumentAsync(token);
 
 				var apiResponse = new RecordResponseDto<UserSessionDto>
 				{
