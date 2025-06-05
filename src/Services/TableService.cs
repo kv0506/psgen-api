@@ -3,18 +3,11 @@ using PsGenApi.Entity;
 
 namespace PsGenApi.Services;
 
-public class TableService
+public class TableService(IConfiguration configuration)
 {
 	private static readonly string UsersPartitionKey = "Users";
 	private static readonly string AccountsPartitionKey = "Accounts";
 	private static readonly string AuthTokenPartitionKey = "AuthTokens";
-
-	private readonly IConfiguration _configuration;
-
-	public TableService(IConfiguration configuration)
-	{
-		_configuration = configuration;
-	}
 
 	public Task CreateOrUpdateTokenDocumentAsync(Token token)
 	{
@@ -139,6 +132,6 @@ public class TableService
 
 	public TableClient CreateTableClient()
 	{
-		return new TableClient(_configuration["StorageConnectionString"], _configuration["TableName"]);
+		return new TableClient(configuration["StorageConnectionString"], configuration["TableName"]);
 	}
 }
